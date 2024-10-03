@@ -6,31 +6,20 @@ public class Main {
 
     private Scanner scanner = new Scanner(System.in);
 
-    private KennelSorter kennelSorter = new KennelSorter();
+    private HashMap<String, Integer> nameUsage = new HashMap<>();
+    private List<String> dogNames = new ArrayList<>(nameUsage.keySet());
 
-    private DogTailComparator dogTailComparator = new DogTailComparator();
+    private BinaryTree binaryTree;
 
-    private HashMap<String, Integer> dogMap = new HashMap<>();
-    private List<String> dogKeys = new ArrayList<>(dogMap.keySet());
+    private DogNode root = null;
 
-    private ArrayList<DogNode> dogCollection = new ArrayList<>();
+    private boolean askForCommand = true;
 
     public static void main(String[] args) {
         new Main().start();
     }
 
-    public void dogNamesSetup(){
-
-        dogMap.put("Max", 0);
-        dogMap.put("Fido", 0);
-        dogMap.put("Buster", 0);
-        dogMap.put("Alban", 0);
-        dogMap.put("Felix", 0);
-
-        dogKeys = new ArrayList<>(dogMap.keySet());
-    }
-
-    private void start(){
+    public void start(){
 
         System.out.println("This is the start of the program!");
 
@@ -38,83 +27,75 @@ public class Main {
 
         System.out.println("How many dogs do you want to create?");
         int dogCount = scanner.nextInt();
-        createDogs(dogCount);
-        scanner.close();
+        scanner.nextLine();
 
+        while(askForCommand) {
+            System.out.println("How do you want to sort them? By tail length (tl), name(n)?");
+            String input = scanner.nextLine();
 
-        /*System.out.println("How do you want to sort them? By tail length (tl), name(n), weight(w) or age(a)?");
-        String input = scanner.nextLine();
-        System.out.println("This is input: " + input + "!");*/
-
-
-        //System.out.println("The dog name: " + dogNodeOne.getName() + " || Child to the left: " + ((dogNodeOne.getLeft() != null) ? dogNodeOne.getLeft().getName() : "Is null") + " || Child to the right: " + ((dogNodeOne.getRight() != null) ? dogNodeOne.getRight().getName() : " Is null ") + " || Tail length is: " + dogNodeOne.getTailLength());
-        //System.out.println("The dog name: " + dogNodeTwo.getName() + " || Child to the left: " + ((dogNodeTwo.getLeft() != null) ? dogNodeTwo.getLeft().getName() : "Is null") + " || Child to the right: " + ((dogNodeTwo.getRight() != null) ? dogNodeTwo.getRight().getName() : "Is null") + " || Tail length is: "+ dogNodeTwo.getTailLength());
-        //System.out.println("The dog name: " + dogNodeThree.getName() + " || Child to the left: " + ((dogNodeThree.getLeft() != null) ? dogNodeThree.getLeft().getName() : "Is null") + " || Child to the right: " + ((dogNodeThree.getRight() != null) ? dogNodeThree.getRight().getName() : "Is null") + " || Tail length is: " + dogNodeThree.getTailLength());
-        //System.out.println("The dog name: " + dogNodeFour.getName() + " || Child to the left: " + ((dogNodeFour.getLeft() != null) ? dogNodeFour.getLeft().getName() : "Is null") + " || Child to the right: " + ((dogNodeFour.getRight() != null) ? dogNodeFour.getRight().getName() : "Is null") + " || Tail length is: " + dogNodeFour.getTailLength());
-
-        for(DogNode dogNode: dogCollection){
-            addNode(dogCollection.getFirst(),dogNode);
-        }
-
-        printDogs(dogCollection.getFirst());
-
-    }
-
-    public void createDogs(int dogAmount){
-        int dogsCreated = 0;
-
-        while(dogsCreated < dogAmount) {
-
-            int randomIndex = random.nextInt(dogMap.size());
-
-            String newDogName = dogKeys.get(randomIndex);
-            int timesNameUsed = dogMap.get(newDogName);
-
-            timesNameUsed++;
-            if (timesNameUsed > 1) {
-                newDogName = newDogName + timesNameUsed;
+            if (input.equals("tl")) {
+                binaryTree = new BinaryTree(new DogTailComparator());
+                askForCommand = false;
+            } else if (input.equals("n")) {
+                binaryTree = new BinaryTree(new DogNameComparator());
+                askForCommand = false;
+            } else {
+                System.out.println("Invalid input");
             }
 
-            dogCollection.add(new DogNode(newDogName, Math.round((1 + (9 * random.nextDouble()))* 100.0) / 100.0));
-            dogMap.put(dogKeys.get(randomIndex), timesNameUsed);
+        }
+        scanner.close();
 
+        createDogs(dogCount);
+
+        printDogs();
+    }
+
+    public void createDogs(int amountOFDogsToCreate) {
+        int dogsCreated = 0;
+
+        while(dogsCreated < amountOFDogsToCreate) {
+
+            if (root == null){
+                root = new DogNode(createDogName(), createDogTailLength());
+            }else {
+                binaryTree.add(root, new DogNode(createDogName(), createDogTailLength()));
+            }
             dogsCreated++;
         }
     }
 
-    public void printDogs(DogNode dogNode){
-        if(dogNode != null){
-            printDogs(dogNode.getRight());
-            System.out.println("Dog name: " + dogNode.getName() + " || Tail length: " + dogNode.getTailLength());
-            printDogs(dogNode.getLeft());
-        }
+    private void dogNamesSetup(){
+
+        nameUsage.put("Max", 0);
+        nameUsage.put("Fido", 0);
+        nameUsage.put("Buster", 0);
+        nameUsage.put("Luna", 0);
+        nameUsage.put("Felix", 0);
+
+        dogNames = new ArrayList<>(nameUsage.keySet());
     }
 
-    public DogNode addNode(DogNode currentNode, DogNode newNode) {
-        if (currentNode == null) {
-            return newNode; // Return new node
-        }
-
-        if (newNode.getTailLength() < currentNode.getTailLength()) { //compare value - current and new node
-            currentNode.setLeft(addNode(currentNode.getLeft(), newNode));
-        } else if (newNode.getTailLength() > currentNode.getTailLength()) {
-            currentNode.setRight(addNode(currentNode.getRight(), newNode));
-        }
-
-        /*if(1 < kennelSorter.sortTwoDogs(dogTailComparator, currentNode, newNode)){ /compare value - current and new node
-            currentNode.setLeft(addNode(currentNode.getLeft(), newNode));
-        } else if (1 > kennelSorter.sortTwoDogs(dogTailComparator, currentNode, newNode)) {
-            currentNode.setRight(addNode(currentNode.getRight(), newNode));
-        }*/
-
-        return currentNode; //return current nude
+    public void printDogs(){
+        binaryTree.printContent(root);
     }
 
-    public void depthFirstSearch(){
-
+    private double createDogTailLength(){
+        return Math.round((1 + (9 * random.nextDouble())) * 100.0) / 100.0;
     }
 
-    public void breathFirstSearch(){
+    private String createDogName(){
+        int randomIndex = random.nextInt(nameUsage.size());
 
+        String newDogName = dogNames.get(randomIndex);
+        int timesNameUsed = nameUsage.get(newDogName);
+
+        timesNameUsed++;
+        if (timesNameUsed > 1) {
+            newDogName = newDogName + timesNameUsed;
+        }
+
+        nameUsage.put(dogNames.get(randomIndex), timesNameUsed);
+        return newDogName;
     }
 }

@@ -3,10 +3,6 @@ public class DogNode {
     private DogNode left;
 
     private DogNode right;
-
-    private int age;
-    private int weight;
-    private String breed;
     private String name;
     private double tailLength;
 
